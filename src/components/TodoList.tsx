@@ -15,41 +15,74 @@ import { Box, Card , Separator , SegmentGroup  } from "@chakra-ui/react";
 import Todo from "./Todo";
 import {  GridItem , Grid    } from "@chakra-ui/react";
 import { Input , Button } from "@chakra-ui/react"
+import { useState } from "react";
+import { useContext } from "react";
+import { Todocontext } from "../context/Todocontext";
 import { v4 as uuidv4 } from 'uuid';
+import { useEffect } from "react";
 
 
-const todos = [
-{
-  id : uuidv4()
- , 
-  title: "قراءة كتاب" , 
-  details : "bla bla bla " , 
-  iscompleted : false
-} ,
-{
-  id :uuidv4() , 
-  title: "العب باليه " , 
-  details : "bola bola bola " , 
-  iscompleted : false
-} ,
-{
-  id : uuidv4() , 
-  title: "شيبسى وكاراتيه " , 
-  details : "brsm brsm brsm " , 
-  iscompleted : false
-}
-]
 
 
 
 export default function Todolist() {
+const [titleinp , settit] = useState("")
+const context = useContext(Todocontext);
+const [displayedtodo , setdisplaytodo] = useState("all")
 
-  const tooodos = todos.map ( (t) => {
-    return <Todo title={t.title} details={t.details} key={t.id} />
+
+
+if (!context) {
+  throw new Error("Todocontext.Provider is missing");
+}
+
+const { todos, settodos } = context;
+
+
+
+function handleaddclick () {
+  const newtodo = {
+    id : uuidv4() ,
+    title : titleinp , 
+    details : "" ,
+    iscompleted : false
+  }
+  const updatedtodoss= [...todos , newtodo]
+  settodos(updatedtodoss);
+  localStorage.setItem("todos" , JSON.stringify(updatedtodoss))
+  settit("")
+}
+
+const completedtodos = todos.filter((t) => {
+  return t.iscompleted
+})
+
+
+// function changedisplayedtype(e: { value: string }) {
+//   setdisplaytodo(e.value);
+// }
+useEffect(() =>{
+const storedTodos = JSON.parse(localStorage.getItem("todos") || "[]");
+ settodos(storedTodos)}, [])
+const noncompletedtodos = todos.filter((t) => {
+  return !t.iscompleted
+})
+
+ const todostoberender =
+  displayedtodo === "completed"
+    ? completedtodos
+    : displayedtodo === "non-completed"
+    ? noncompletedtodos
+    : todos;
+
+
+ const tooodos = todostoberender.map ( (t) => {
+    return <Todo todo={t} key={t.id}  />
   })
+
   return (
 <Container maxW="600px">
-<Card.Root minWidth="275px" padding={"10px"}>
+<Card.Root minWidth="275px" padding={"10px"} style={{maxHeight : "80vh" , overflow : "scroll"}}> 
       <Card.Body gap="2">
         {/* <Avatar.Root size="lg" shape="rounded">
           <Avatar.Fallback name="Nue Camp" />
@@ -62,13 +95,17 @@ export default function Todolist() {
 
    >مهامى</Card.Title>
                     <Separator />
-<SegmentGroup.Root defaultValue="all" style={{ marginTop : "20px"}} >
+<SegmentGroup.Root value={displayedtodo} onValueChange={(details) => {
+    if (details.value !== null) {
+      setdisplaytodo(details.value);
+    }
+  }} style={{ marginTop : "20px"}} >
   <SegmentGroup.Indicator />
   <SegmentGroup.Items
     items={[
       { label: "الكل", value: "all" },
-      { label: "المنجز", value: "active" },
-      { label: "غير المنجز", value: "done" },
+      { label: "المنجز", value: "completed" },
+      { label: "غير المنجز", value: "non-completed" },
     ]}
     flex="1"
   />
@@ -87,7 +124,12 @@ export default function Todolist() {
         width={"100%"}
         p={3}
       >
-      <Input padding={"10px"} placeholder="ادخل المهمة الجديدة" variant="outline" />
+      <Input
+      value={titleinp} 
+      onChange={(e) => {
+        settit(e.target.value)
+      }}
+      padding={"10px"} placeholder="ادخل المهمة الجديدة" variant="outline" />
       </GridItem>
 
       <GridItem
@@ -97,7 +139,12 @@ export default function Todolist() {
         alignItems="center"
         p={3}
       >
-<Button style={{width : "100%", height : "100%" , background : "#296fc5"}}>اضافة</Button>
+<Button
+onClick={()=>{
+  handleaddclick ()
+}}
+disabled = {titleinp.length ==0}
+style={{width : "100%", height : "100%" , background : "#296fc5"}}>اضافة</Button>
       </GridItem>
     </Grid>
       </Card.Body>
