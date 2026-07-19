@@ -127,7 +127,7 @@ function handleEdit() {
         <Dialog.Positioner>
           <Dialog.Content>
             <Dialog.Header>
-              <Dialog.Title>هل انت متاكد من حذف المهمة ؟ </Dialog.Title>
+              <Dialog.Title> تعديل المهمه</Dialog.Title>
             </Dialog.Header>
                   <Dialog.Body>
           <Stack gap={4}>
