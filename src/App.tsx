@@ -4,7 +4,7 @@ import "./App.css"
 import { Todocontext } from './context/Todocontext'
 import { v4 as uuidv4 } from 'uuid';
 import { useState } from "react";
-
+import { Toaster } from "./components/ui/toaster"
 
 const inittodos = [
 {
@@ -34,9 +34,10 @@ function App() {
 const [todos , settodos ]= useState(inittodos)
 
   return (
+    
 <div className='App'   dir="rtl"
  style={{ padding: "40px 0", fontFamily : "Alexandria" , display : "flex" , alignItems :"center" , justifyContent : "center" , minHeight : "100vh" , background : "#191b1f"}}>
-
+<Toaster />
 <Todocontext.Provider value={{todos , settodos }}>
 <Todolist />
 

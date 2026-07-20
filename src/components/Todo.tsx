@@ -1,8 +1,9 @@
 import { Box, Card, Grid, GridItem, Heading, IconButton, Text } from "@chakra-ui/react";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { FaCheck } from "react-icons/fa";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { Todocontext } from "../context/Todocontext";
+import { toaster } from "./mytoast/Toasts"
 
 
 interface TodoType {
@@ -28,8 +29,7 @@ if (!context) {
   throw new Error("Todocontext.Provider is missing");
 }
 const { todos, settodos } = context;
-const [title, setTitle] = useState(todo.title);
-const [details, setDetails] = useState(todo.details);
+
 
 
 function handlecheck() {
@@ -47,11 +47,15 @@ function handlecheck() {
   })
   settodos(updatetodo)
     localStorage.setItem("todos" , JSON.stringify(updatetodo))
+         toaster.create({
+                  description: "تم التعديل بنجاح  ",
+                  closable: true,
+                  type: "success"
+                })
 
 }
 function handleEditClick() {
-  setTitle(todo.title);
-  setDetails(todo.details);
+
   showedit(todo)
 }
 
