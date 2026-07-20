@@ -1,9 +1,8 @@
-import { Box, Button, Card, CloseButton, Dialog, Grid, GridItem, Heading, IconButton, Portal, Text } from "@chakra-ui/react";
+import { Box, Card, Grid, GridItem, Heading, IconButton, Text } from "@chakra-ui/react";
 import { useContext, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { Todocontext } from "../context/Todocontext";
-import { Textarea , Field, Input, Stack } from "@chakra-ui/react"
 
 
 interface TodoType {
@@ -14,10 +13,12 @@ interface TodoType {
 }
 interface TodoProps {
   todo: TodoType;
+  showdelete: (todo: TodoType) => void;
+  showedit : (todo: TodoType) => void;
 }
 
 export default function Todo({
-  todo ,
+  todo , showdelete , showedit
 }: TodoProps) {
 
 
@@ -27,8 +28,6 @@ if (!context) {
   throw new Error("Todocontext.Provider is missing");
 }
 const { todos, settodos } = context;
-const [deleteOpen, setDeleteOpen] = useState(false);
-const [editOpen, setEditOpen] = useState(false);
 const [title, setTitle] = useState(todo.title);
 const [details, setDetails] = useState(todo.details);
 
@@ -50,119 +49,21 @@ function handlecheck() {
     localStorage.setItem("todos" , JSON.stringify(updatetodo))
 
 }
-
-function handledeleteclick () {
-  setDeleteOpen(true)
-}
-
-function handledelete() {
-const deletetodo = todos.filter((t) =>{
-//     if(t.id == todo.id) {
-// return(false)
-//   }else{
-//   return (true)}
-    return t.id != todo.id ;
-
-  })
-  settodos(deletetodo)
-      localStorage.setItem("todos" , JSON.stringify(deletetodo))
-
-}
 function handleEditClick() {
   setTitle(todo.title);
   setDetails(todo.details);
-  setEditOpen(true);
-}
-function handleEdit() {
-  const updatedTodos = todos.map((t) => {
-    if (t.id === todo.id) {
-      return {
-        ...t,
-        title,
-        details,
-      };
-    }
-
-    return t;
-  });
-
-  settodos(updatedTodos);
-        localStorage.setItem("todos" , JSON.stringify(updatedTodos))
-  setEditOpen(false);
+  showedit(todo)
 }
 
+
+function handledeleteclick () {
+  showdelete(todo)
+}
   return (
  <>
-<Dialog.Root
-  lazyMount
-  open={deleteOpen}
-  onOpenChange={(e) => setDeleteOpen(e.open)}
->      <Portal>
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content>
-            <Dialog.Header>
-              <Dialog.Title>هل انت متاكد من حذف المهمة ؟ </Dialog.Title>
-            </Dialog.Header>
-            <Dialog.Body>
-             لا يمكنك التراجع عن الحذف بعد اتمامه
-            </Dialog.Body>
-            <Dialog.Footer>
-              <Dialog.ActionTrigger asChild>
-                <Button variant="outline">إلغاء</Button>
-              </Dialog.ActionTrigger>
-              <Button onClick={handledelete}>نعم قم بالحذف</Button>
-            </Dialog.Footer>
-            <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" />
-            </Dialog.CloseTrigger>
-          </Dialog.Content>
-        </Dialog.Positioner>
-      </Portal>
-    </Dialog.Root>
 
-<Dialog.Root lazyMount open={editOpen} onOpenChange={(e) => setEditOpen(e.open)}>
-      <Portal>
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content>
-            <Dialog.Header>
-              <Dialog.Title> تعديل المهمه</Dialog.Title>
-            </Dialog.Header>
-                  <Dialog.Body>
-          <Stack gap={4}>
-            <Field.Root>
-              <Field.Label>العنوان</Field.Label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </Field.Root>
 
-            <Field.Root>
-              <Field.Label>التفاصيل</Field.Label>
-              <Textarea
-                value={details}
-                onChange={(e) => setDetails(e.target.value)}
-              />
-            </Field.Root>
-          </Stack>
-        </Dialog.Body>
-            <Dialog.Footer>
-              <Dialog.ActionTrigger asChild>
-                <Button variant="outline">إلغاء</Button>
-              </Dialog.ActionTrigger>
-              <Button onClick={handleEdit}>حفظ</Button>
-            </Dialog.Footer>
-            <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" />
-            </Dialog.CloseTrigger>
-          </Dialog.Content>
-        </Dialog.Positioner>
-      </Portal>
-    </Dialog.Root>
 
- 
 <Card.Root className="todocart" minWidth="275px" background="#283593" color={"white"} marginTop={"7px"}>
 <Card.Body p={3}>
           {/* <Avatar.Root size="lg" shape="rounded">

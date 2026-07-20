@@ -20,17 +20,28 @@ import { useContext } from "react";
 import { Todocontext } from "../context/Todocontext";
 import { v4 as uuidv4 } from 'uuid';
 import { useEffect } from "react";
+import { useMemo } from "react";
+import {  CloseButton, Dialog,  Portal } from "@chakra-ui/react";
+import { Textarea , Field, Stack } from "@chakra-ui/react"
 
 
 
-
+interface TodoType {
+  id: string;
+  title: string;
+  details: string;
+  iscompleted: boolean;
+}
 
 export default function Todolist() {
 const [titleinp , settit] = useState("")
 const context = useContext(Todocontext);
 const [displayedtodo , setdisplaytodo] = useState("all")
-
-
+const [deleteOpen, setDeleteOpen] = useState(false);
+const [dialogtodo, setdialogtodo] = useState<TodoType | null>(null);
+const [editOpen, setEditOpen] = useState(false);
+const [title, setTitle] = useState("");
+const [details, setDetails] = useState("");
 
 if (!context) {
   throw new Error("Todocontext.Provider is missing");
@@ -53,9 +64,52 @@ function handleaddclick () {
   settit("")
 }
 
-const completedtodos = todos.filter((t) => {
-  return t.iscompleted
-})
+
+function showdeletedial(todo: TodoType) {
+  setdialogtodo(todo);
+  setDeleteOpen(true);
+}
+
+
+
+function handledelete() {
+  if (!dialogtodo) return;
+
+  const deletetodo = todos.filter((t) => t.id !== dialogtodo.id);
+
+  settodos(deletetodo);
+  localStorage.setItem("todos", JSON.stringify(deletetodo));
+  setDeleteOpen(false);
+}
+
+function showeditdial(todo: TodoType) {
+  setdialogtodo(todo);
+  setTitle(todo.title);
+  setDetails(todo.details);
+  setEditOpen(true);
+}
+
+function handleEdit() {
+  if (!dialogtodo) return;
+
+  const updatedTodos = todos.map((t) => {
+    if (t.id === dialogtodo.id) {
+      return {
+        ...t,
+        title,
+        details,
+      };
+    }
+
+    return t;
+  });
+
+  settodos(updatedTodos);
+  localStorage.setItem("todos", JSON.stringify(updatedTodos));
+
+  setEditOpen(false);
+}
+
 
 
 // function changedisplayedtype(e: { value: string }) {
@@ -64,9 +118,20 @@ const completedtodos = todos.filter((t) => {
 useEffect(() =>{
 const storedTodos = JSON.parse(localStorage.getItem("todos") || "[]");
  settodos(storedTodos)}, [])
-const noncompletedtodos = todos.filter((t) => {
-  return !t.iscompleted
-})
+
+const completedtodos = useMemo(() => {
+  return todos.filter((t) =>{ 
+    console.log("calling complete")
+    return t.iscompleted});
+}, [todos]);
+
+
+const noncompletedtodos =useMemo(() => {
+  return todos.filter((t) =>{ 
+    console.log("calling non-complete")
+    return !t.iscompleted});
+}, [todos]);
+
 
  const todostoberender =
   displayedtodo === "completed"
@@ -77,10 +142,80 @@ const noncompletedtodos = todos.filter((t) => {
 
 
  const tooodos = todostoberender.map ( (t) => {
-    return <Todo todo={t} key={t.id}  />
+    return <Todo todo={t} key={t.id} showdelete= {showdeletedial} showedit= {showeditdial} />
   })
 
   return (
+    <>
+    <Dialog.Root lazyMount open={editOpen} onOpenChange={(e) => setEditOpen(e.open)}>
+          <Portal>
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+              <Dialog.Content>
+                <Dialog.Header>
+                  <Dialog.Title> تعديل المهمه</Dialog.Title>
+                </Dialog.Header>
+                      <Dialog.Body>
+              <Stack gap={4}>
+                <Field.Root>
+                  <Field.Label>العنوان</Field.Label>
+                  <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                </Field.Root>
+    
+                <Field.Root>
+                  <Field.Label>التفاصيل</Field.Label>
+                  <Textarea
+                    value={details}
+                    onChange={(e) => setDetails(e.target.value)}
+                  />
+                </Field.Root>
+              </Stack>
+            </Dialog.Body>
+                <Dialog.Footer>
+                  <Dialog.ActionTrigger asChild>
+                    <Button variant="outline">إلغاء</Button>
+                  </Dialog.ActionTrigger>
+                  <Button onClick={handleEdit}>حفظ</Button>
+                </Dialog.Footer>
+                <Dialog.CloseTrigger asChild>
+                  <CloseButton size="sm" />
+                </Dialog.CloseTrigger>
+              </Dialog.Content>
+            </Dialog.Positioner>
+          </Portal>
+        </Dialog.Root>
+    
+     
+    <Dialog.Root
+      lazyMount
+      open={deleteOpen}
+      onOpenChange={(e) => setDeleteOpen(e.open)}
+    >      <Portal>
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+              <Dialog.Content>
+                <Dialog.Header>
+                  <Dialog.Title>هل انت متاكد من حذف المهمة ؟ </Dialog.Title>
+                </Dialog.Header>
+                <Dialog.Body>
+                 لا يمكنك التراجع عن الحذف بعد اتمامه
+                </Dialog.Body>
+                <Dialog.Footer>
+                  <Dialog.ActionTrigger asChild>
+                    <Button variant="outline">إلغاء</Button>
+                  </Dialog.ActionTrigger>
+                  <Button onClick={handledelete}>نعم قم بالحذف</Button>
+                </Dialog.Footer>
+                <Dialog.CloseTrigger asChild>
+                  <CloseButton size="sm" />
+                </Dialog.CloseTrigger>
+              </Dialog.Content>
+            </Dialog.Positioner>
+          </Portal>
+        </Dialog.Root>
 <Container maxW="600px">
 <Card.Root minWidth="275px" padding={"10px"} style={{maxHeight : "80vh" , overflow : "scroll"}}> 
       <Card.Body gap="2">
@@ -155,5 +290,6 @@ style={{width : "100%", height : "100%" , background : "#296fc5"}}>اضافة</B
     </Card.Root>
 
     </Container>
+    </>
   )
 }
