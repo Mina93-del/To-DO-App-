@@ -18,12 +18,14 @@ import { Input, Button } from "@chakra-ui/react"
 import { useState } from "react";
 import { useContext } from "react";
 import { Todocontext } from "../context/Todocontext";
-import { v4 as uuidv4 } from 'uuid';
 import { useEffect } from "react";
 import { useMemo } from "react";
 import { CloseButton, Dialog, Portal } from "@chakra-ui/react";
 import { Textarea, Field, Stack } from "@chakra-ui/react"
 import { toaster } from "./mytoast/Toasts"
+import { useReducer } from "react";
+import Reducer from "../reducer/todosreducer";
+
 
 interface TodoType {
   id: string;
@@ -41,33 +43,25 @@ export default function Todolist() {
   const [editOpen, setEditOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
-
+  const [todos, dispatch] = useReducer(Reducer, [])
 
 
   if (!context) {
     throw new Error("Todocontext.Provider is missing");
   }
 
-  const { todos, settodos } = context;
 
 
 
   function handleaddclick() {
-    const newtodo = {
-      id: uuidv4(),
-      title: titleinp,
-      details: "",
-      iscompleted: false
-    }
-    const updatedtodoss = [...todos, newtodo]
-    settodos(updatedtodoss);
-    localStorage.setItem("todos", JSON.stringify(updatedtodoss))
+
+    dispatch({ type: "added", payload: { newtitle: titleinp } })
     settit("")
-     toaster.create({
-              description: "تم اضافة المهمة بنجاح",
-              closable: true,
-              type: "success"
-            })
+    toaster.create({
+      description: "تم اضافة المهمة بنجاح",
+      closable: true,
+      type: "success"
+    })
   }
 
 
@@ -80,17 +74,17 @@ export default function Todolist() {
 
   function handledelete() {
     if (!dialogtodo) return;
-
-    const deletetodo = todos.filter((t) => t.id !== dialogtodo.id);
-
-    settodos(deletetodo);
-    localStorage.setItem("todos", JSON.stringify(deletetodo));
-    setDeleteOpen(false);
- toaster.create({
-              description: "تم حذف المهمة بنجاح",
-              closable: true,
-              type: "error"
-            })
+    dispatch({
+      type: "deleted",
+      payload: {
+        id: dialogtodo.id,
+      },
+    }); setDeleteOpen(false);
+    toaster.create({
+      description: "تم حذف المهمة بنجاح",
+      closable: true,
+      type: "error"
+    })
   }
 
   function showeditdial(todo: TodoType) {
@@ -103,27 +97,34 @@ export default function Todolist() {
   function handleEdit() {
     if (!dialogtodo) return;
 
-    const updatedTodos = todos.map((t) => {
-      if (t.id === dialogtodo.id) {
-        return {
-          ...t,
-          title,
-          details,
-        };
-      }
+    dispatch({
+      type: "edited",
+      payload: {
+        id: dialogtodo.id,
+        title: title,
+        details: details,
+      },
+    });    // const updatedTodos = todos.map((t) => {
+    //   if (t.id === dialogtodo.id) {
+    //     return {
+    //       ...t,
+    //       title,
+    //       details,
+    //     };
+    //   }
 
-      return t;
-    });
+    //   return t;
+    // });
 
-    settodos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    // settodos(updatedTodos);
+    // localStorage.setItem("todos", JSON.stringify(updatedTodos));
 
     setEditOpen(false);
-        toaster.create({
-              description: "تم تعديل المهمة بنجاح",
-              closable: true,
-              type: "success"
-            })
+    toaster.create({
+      description: "تم تعديل المهمة بنجاح",
+      closable: true,
+      type: "success"
+    })
   }
 
 
@@ -132,8 +133,7 @@ export default function Todolist() {
   //   setdisplaytodo(e.value);
   // }
   useEffect(() => {
-    const storedTodos = JSON.parse(localStorage.getItem("todos") || "[]");
-    settodos(storedTodos)
+dispatch({type : "get"})
   }, [])
 
   const completedtodos = useMemo(() => {
