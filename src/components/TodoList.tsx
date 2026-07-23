@@ -16,15 +16,13 @@ import Todo from "./Todo";
 import { GridItem, Grid } from "@chakra-ui/react";
 import { Input, Button } from "@chakra-ui/react"
 import { useState } from "react";
-import { useContext } from "react";
-import { Todocontext } from "../context/Todocontext";
+import { useTodos , useTodosdispatch  } from "../context/usetodos";
 import { useEffect } from "react";
 import { useMemo } from "react";
 import { CloseButton, Dialog, Portal } from "@chakra-ui/react";
 import { Textarea, Field, Stack } from "@chakra-ui/react"
 import { toaster } from "./mytoast/Toasts"
-import { useReducer } from "react";
-import Reducer from "../reducer/todosreducer";
+
 
 
 interface TodoType {
@@ -36,19 +34,20 @@ interface TodoType {
 
 export default function Todolist() {
   const [titleinp, settit] = useState("")
-  const context = useContext(Todocontext);
+  // const context = useContext(Todocontext);
   const [displayedtodo, setdisplaytodo] = useState("all")
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [dialogtodo, setdialogtodo] = useState<TodoType | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
-  const [todos, dispatch] = useReducer(Reducer, [])
 
+  const todos = useTodos();
+  const dispatch = useTodosdispatch();
 
-  if (!context) {
-    throw new Error("Todocontext.Provider is missing");
-  }
+  // if (!context) {
+  //   throw new Error("Todocontext.Provider is missing");
+  // }
 
 
 

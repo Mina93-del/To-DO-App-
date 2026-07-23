@@ -1,8 +1,7 @@
 import { Box, Card, Grid, GridItem, Heading, IconButton, Text } from "@chakra-ui/react";
-import { useContext } from "react";
 import { FaCheck } from "react-icons/fa";
 import { MdDelete, MdEdit } from "react-icons/md";
-import { Todocontext } from "../context/Todocontext";
+import { useTodosdispatch} from "../context/usetodos";
 import { toaster } from "./mytoast/Toasts"
 
 
@@ -23,30 +22,22 @@ export default function Todo({
 }: TodoProps) {
 
 
-const context = useContext(Todocontext);
+// const context = useContext(Todocontext);
 
-if (!context) {
-  throw new Error("Todocontext.Provider is missing");
-}
-const { todos, settodos } = context;
+// if (!context) {
+//   throw new Error("Todocontext.Provider is missing");
+// }
 
+  const dispatch = useTodosdispatch();
 
 
 function handlecheck() {
- const updatetodo = todos.map((t) =>{
-    if(t.id == todo.id) {
-    //   if( t.iscompleted == true) {
-    //           t.iscompleted = false ;
-    //   }else {
-    //   t.iscompleted = true ;
-
-    // }
-    t.iscompleted = !t.iscompleted ;
-    }
-    return (t)
-  })
-  settodos(updatetodo)
-    localStorage.setItem("todos" , JSON.stringify(updatetodo))
+dispatch({
+  type: "togglecompleted",
+  payload: {
+    id: todo.id,
+  },
+});
          toaster.create({
                   description: "تم التعديل بنجاح  ",
                   closable: true,

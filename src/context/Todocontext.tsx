@@ -1,14 +1,8 @@
-import { createContext, type Dispatch, type SetStateAction } from "react";
+import { createContext } from "react";
+import type { Dispatch } from "react";
+import type { ActionType, TodoType } from "../reducer/todosreducer";
 
-export interface TodoType {
-  id: string;
-  title: string;
-  details: string;
-  iscompleted: boolean;
-}
-interface TodoContextType {
-  todos: TodoType[];
-  settodos: Dispatch<SetStateAction<TodoType[]>>;
-}
+export const TodoContext = createContext<TodoType[]>([]);
 
-export const Todocontext = createContext<TodoContextType | null>(null);
+export const DispatchContext =
+  createContext<Dispatch<ActionType> | null>(null);
